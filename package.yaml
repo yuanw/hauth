@@ -23,6 +23,7 @@ dependencies:
 - aeson
 - base >= 4.7 && < 5
 - classy-prelude
+- mtl
 - text
 - time
 - time-lens
