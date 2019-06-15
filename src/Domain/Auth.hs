@@ -1,4 +1,31 @@
-module Domain.Auth where
+module Domain.Auth (
+    -- * Types
+    Auth(..),
+    Email,
+    mkEmail,
+    rawEmail,
+    Password,
+    mkPassword,
+    rawPassword,
+    UserId,
+    VerificationCode,
+    SessionId,
+    RegistrationError(..),
+    EmailVerificationError(..),
+    LoginError(..),
+
+    -- * Ports
+    AuthRepo(..),
+    EmailVerificationNotif(..),
+    SessionRepo(..),
+
+    -- * Use cases
+    register,
+    verifyEmail,
+    login,
+    resolveSessionId,
+    getUser,
+) where
 
 import Control.Monad.Except
 import ClassyPrelude
@@ -62,6 +89,10 @@ class Monad m => AuthRepo m where
     addAuth :: Auth -> m (Either RegistrationError VerificationCode)
     setEmailAsVerified :: VerificationCode -> m (Either EmailVerificationError ())
     findUserByAuth :: Auth -> m (Maybe (UserId, Bool))
+    findEmailFromUserId :: UserId -> m (Maybe Email)
+
+getUser :: AuthRepo m => UserId -> m (Maybe Email)
+getUser = findEmailFromUserId
 
 class Monad m => EmailVerificationNotif m where
     notifyEmailVerfication :: Email -> VerificationCode -> m ()
@@ -69,6 +100,10 @@ class Monad m => EmailVerificationNotif m where
 
 class Monad m => SessionRepo m where
     newSession :: UserId -> m SessionId
+    findUserBySessionId :: SessionId -> m (Maybe UserId)
+
+resolveSessionId :: SessionRepo m => SessionId -> m (Maybe UserId)
+resolveSessionId = findUserBySessionId
 
 register :: (AuthRepo m, EmailVerificationNotif m)
     => Auth -> m (Either RegistrationError ())
