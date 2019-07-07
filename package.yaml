@@ -23,7 +23,9 @@ dependencies:
 - aeson
 - base >= 4.7 && < 5
 - classy-prelude
+- data-has
 - mtl
+- string-random
 - text
 - time
 - time-lens

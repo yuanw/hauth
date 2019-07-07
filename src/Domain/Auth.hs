@@ -46,7 +46,7 @@ type VerificationCode = Text
 type UserId = Int
 type SessionId = Text
 
-newtype Email = Email {emailRaw :: Text} deriving (Show, Eq)
+newtype Email = Email {emailRaw :: Text} deriving (Show, Eq, Ord)
 
 rawEmail :: Email -> Text
 rawEmail = emailRaw
@@ -95,7 +95,7 @@ getUser :: AuthRepo m => UserId -> m (Maybe Email)
 getUser = findEmailFromUserId
 
 class Monad m => EmailVerificationNotif m where
-    notifyEmailVerfication :: Email -> VerificationCode -> m ()
+    notifyEmailVerification :: Email -> VerificationCode -> m ()
 
 
 class Monad m => SessionRepo m where
@@ -110,7 +110,7 @@ register :: (AuthRepo m, EmailVerificationNotif m)
 register auth = runExceptT $ do
     vCode <- ExceptT $ addAuth auth
     let email = authEmail auth
-    lift $ notifyEmailVerfication email vCode
+    lift $ notifyEmailVerification email vCode
 
 verifyEmail :: AuthRepo m => VerificationCode -> m (Either EmailVerificationError ())
 verifyEmail = setEmailAsVerified
@@ -130,7 +130,8 @@ instance AuthRepo IO where
         return $ Right "fake verification code"
     setEmailAsVerified = undefined
     findUserByAuth = undefined
+    findEmailFromUserId = undefined
 
 instance EmailVerificationNotif IO where
-    notifyEmailVerfication email vcode =
+    notifyEmailVerification email vcode =
         putStrLn $ "Notify" <> rawEmail email <> " - " <> vcode
